@@ -134,7 +134,7 @@ function AuthModal({ onAuth }) {
             <p className="modal-sub">{step === "login" ? "Sign in to your account" : "Create your account"}</p>
             <input className="inp" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} type="email" />
             <input className="inp" placeholder="Password (min 6 chars)" value={pw} onChange={e => setPw(e.target.value)} type="password" onKeyDown={e => e.key === "Enter" && handleAuth()} />
-            {step === "signup" && <input className="inp" placeholder="Batch year (e.g. 2026)" value={batch} onChange={e => setBatch(e.target.value)} />}
+            {step === "signup" && <input className="inp" placeholder="Batch year (e.g. ID26)" value={batch} onChange={e => setBatch(e.target.value)} />}
             {err && <p className="errmsg">{err}</p>}
             <button className="btn-primary" onClick={handleAuth} disabled={loading}>{loading ? "Loading…" : step === "login" ? "Sign In →" : "Create Account →"}</button>
             <button className="btn-ghost" onClick={() => { setStep(step === "login" ? "signup" : "login"); setErr(""); }}>{step === "login" ? "No account? Sign up" : "Have an account? Sign in"}</button>
