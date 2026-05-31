@@ -97,10 +97,11 @@ function AuthModal({ onAuth }) {
     setLoading(true);
     try {
       if (step === "signup") {
-        if (!batch) { setErr("Enter your batch year!"); setLoading(false); return; }
-        const res = await sb.signUp(email, pw, batch);
+        const res = await sb.signUp(email, pw, "");
         if (res.error) { setErr(res.error.message); setLoading(false); return; }
-        setErr("✉️ Check your email to confirm your account!");
+        const login = await sb.signIn(email, pw);
+        if (login.error) { setErr("Account created! Please sign in."); setLoading(false); return; }
+        onAuth(login.access_token, login.user);
       } else {
         const res = await sb.signIn(email, pw);
         if (res.error) { setErr(res.error.message); setLoading(false); return; }
@@ -108,6 +109,7 @@ function AuthModal({ onAuth }) {
       }
     } catch { setErr("Something went wrong. Try again."); }
     setLoading(false);
+  }
   }
 
   return (
