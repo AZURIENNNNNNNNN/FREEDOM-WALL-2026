@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 // ============================================================
 //  FILL THESE IN — all 4 are required
 // ============================================================
-const SUPABASE_URL = "https://wddvrrcelpbcicgvrvra.supabase.co/";        // from Supabase → Settings → API
+const SUPABASE_URL = "https://wddvrrcelpbcicgvrvra.supabase.co";        // from Supabase → Settings → API
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkZHZycmNlbHBiY2ljZ3ZydnJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNDk4MzgsImV4cCI6MjA5NTcyNTgzOH0.jyD4vf90l_nhP_UwWhfOab5283UPUkVF_OPPyumBGwY"; // same page
 const ADMIN_EMAIL = "dawnedtilldasc@gmail.com";      // your personal email
 const INVITE_CODE = "ARCHER2026";                 // change this to your secret code!
