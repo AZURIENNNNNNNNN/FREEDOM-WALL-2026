@@ -110,7 +110,6 @@ function AuthModal({ onAuth }) {
     } catch { setErr("Something went wrong. Try again."); }
     setLoading(false);
   }
-  }
 
   return (
     <div className="overlay">
