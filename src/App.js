@@ -361,7 +361,7 @@ export default function App() {
       <div className="app">
         <div className="site-header">
           <div className="header-left">
-            <div className="shield">⚔</div>
+            <img src="https://files.catbox.moe/k97am8.png" style={{ width: "64px", height: "64px", borderRadius: "50%", objectFit: "cover", boxShadow: "0 4px 16px rgba(201,168,76,0.5)" }} />
             <div className="header-text">
               <h1>Archer's Wall</h1>
               <p>De La Salle University · Anonymous Board</p>
