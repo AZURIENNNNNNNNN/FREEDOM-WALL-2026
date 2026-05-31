@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 // ============================================================
 const SUPABASE_URL = "https://wddvrrcelpbcicgvrvra.supabase.co/";        // from Supabase → Settings → API
 const SUPABASE_ANON_KEY = "sb_publishable_5b4gbec7u_GxL9JQQS_a6g_NCa1Bshn"; // same page
-const ADMIN_EMAIL = "charu.moonbow@gmail.com";      // your personal email
+const ADMIN_EMAIL = "dawnedtilldasc@gmail.com";      // your personal email
 const INVITE_CODE = "ARCHER2026";                 // change this to your secret code!
 // ============================================================
 
