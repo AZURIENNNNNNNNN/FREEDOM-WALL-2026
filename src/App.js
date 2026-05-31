@@ -12,8 +12,8 @@ const INVITE_CODE = "ARCHER2026";                 // change this to your secret 
 const sb = {
   h: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
   ah: (t) => ({ "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${t}` }),
-  async signUp(email, password) {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, { method: "POST", headers: this.h, body: JSON.stringify({ email, password }) });
+  async signUp(email, password, batch, nickname) {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, { method: "POST", headers: this.h, body: JSON.stringify({ email, password, data: { batch, nickname } }) });
     return r.json();
   },
   async signIn(email, password) {
@@ -22,14 +22,14 @@ const sb = {
   },
   async signOut(t) { await fetch(`${SUPABASE_URL}/auth/v1/logout`, { method: "POST", headers: this.ah(t) }); },
   async getPosts(t, isAdmin) {
-    const sel = isAdmin ? "*" : "id,content,batch,upvotes,downvotes,created_at,expires_at";
+    const sel = isAdmin ? "*" : "id,content,batch,nickname,upvotes,downvotes,created_at,expires_at";
     const now = new Date().toISOString();
     const r = await fetch(`${SUPABASE_URL}/rest/v1/posts?select=${sel}&expires_at=gt.${now}&order=created_at.desc`, { headers: this.ah(t) });
     return r.json();
   },
-  async createPost(t, content, userId, userEmail, expiresHours) {
+  async createPost(t, content, batch, nickname, userId, userEmail, expiresHours) {
     const expires = new Date(Date.now() + expiresHours * 3600000).toISOString();
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/posts`, { method: "POST", headers: { ...this.ah(t), Prefer: "return=representation" }, body: JSON.stringify({ content, batch: "Archer", user_id: userId, user_email: userEmail, expires_at: expires }) });
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/posts`, { method: "POST", headers: { ...this.ah(t), Prefer: "return=representation" }, body: JSON.stringify({ content, batch, nickname, user_id: userId, user_email: userEmail, expires_at: expires }) });
     return r.json();
   },
   async vote(t, postId, type) {
@@ -68,7 +68,8 @@ function PostCard({ post, isAdmin, onVote, onDelete, viewerEmail }) {
       <div className="card-accent" />
       <Watermark viewerEmail={viewerEmail} />
       <div className="card-top">
-        <span className="batch-badge">🏹 Archer</span>
+        <span className="batch-badge">🏹 {post.batch || "Archer"}</span>
+        {post.nickname && <span className="nickname-badge">~ {post.nickname}</span>}
         <TimeLeft expiresAt={post.expires_at} />
         {isAdmin && <span className="admin-tag">👁 {post.user_email}</span>}
       </div>
@@ -91,6 +92,8 @@ function AuthModal({ onAuth }) {
   const [code, setCode] = useState("");
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
+  const [batch, setBatch] = useState("");
+  const [nickname, setNickname] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
@@ -108,7 +111,9 @@ function AuthModal({ onAuth }) {
     setLoading(true);
     try {
       if (step === "signup") {
-        const res = await sb.signUp(email, pw);
+        if (!batch.trim()) { setErr("Enter your ID batch (e.g. ID126)!"); setLoading(false); return; }
+        if (!nickname.trim()) { setErr("Enter a nickname!"); setLoading(false); return; }
+        const res = await sb.signUp(email, pw, batch.trim(), nickname.trim());
         if (res.error) { setErr(res.error.message); setLoading(false); return; }
         const login = await sb.signIn(email, pw);
         if (login.error) { setErr("Account created! Please sign in."); setLoading(false); return; }
@@ -146,6 +151,8 @@ function AuthModal({ onAuth }) {
             <p className="modal-sub">{step === "login" ? "Sign in to your account" : "Create your account"}</p>
             <input className="inp" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} type="email" />
             <input className="inp" placeholder="Password (min 6 chars)" value={pw} onChange={e => setPw(e.target.value)} type="password" onKeyDown={e => e.key === "Enter" && handleAuth()} />
+            {step === "signup" && <input className="inp" placeholder="Your ID batch (e.g. ID126)" value={batch} onChange={e => setBatch(e.target.value)} />}
+            {step === "signup" && <input className="inp" placeholder="Your nickname (shown on posts)" value={nickname} onChange={e => setNickname(e.target.value)} />}
             {err && <p className="errmsg">{err}</p>}
             <button className="btn-primary" onClick={handleAuth} disabled={loading}>{loading ? "Loading…" : step === "login" ? "Sign In →" : "Create Account →"}</button>
             <button className="btn-ghost" onClick={() => { setStep(step === "login" ? "signup" : "login"); setErr(""); }}>{step === "login" ? "No account? Sign up" : "Have an account? Sign in"}</button>
@@ -185,7 +192,7 @@ export default function App() {
   async function submit() {
     if (!content.trim()) return;
     setLoading(true);
-    await sb.createPost(session.token, content.trim(), session.user.id, session.user.email, expires);
+    await sb.createPost(session.token, content.trim(), session.user.user_metadata?.batch || "Archer", session.user.user_metadata?.nickname || "", session.user.id, session.user.email, expires);
     setContent("");
     await fetchPosts();
     setLoading(false);
@@ -250,6 +257,7 @@ export default function App() {
         .wm-text { font-size: 0.62rem; font-weight: 700; color: rgba(26,71,42,0.07); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; user-select: none; }
         .card-top { position: relative; z-index: 1; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
         .batch-badge { background: var(--green); color: var(--white); border-radius: 50px; padding: 0.2rem 0.7rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+        .nickname-badge { background: var(--gold-pale); color: var(--gold); border: 1px solid var(--gold); border-radius: 50px; padding: 0.2rem 0.7rem; font-size: 0.7rem; font-weight: 700; font-style: italic; }
         .pill { border-radius: 50px; padding: 0.18rem 0.6rem; font-size: 0.68rem; font-weight: 700; }
         .pill.green { background: var(--green-pale); color: var(--green); }
         .pill.amber { background: #fef3c7; color: #92400e; }
